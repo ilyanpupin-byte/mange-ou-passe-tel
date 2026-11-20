@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="fr"><head><meta name="robots" content="noindex,nofollow"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mange ou passe"><meta name="theme-color" content="#0f1115">
+<title>Mange ou passe</title>
+<style>
+:root{--bg:#0f1115;--c:#1a1d24;--c2:#232733;--t:#f2f3f5;--d:#9aa1ad;--ok:#34c759;--or:#ff9f0a;--bl:#4c9aff;--rg:#ff453a;--gr:#8e96a3}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--t);font:15px/1.35 -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top) 12px calc(env(safe-area-inset-bottom) + 24px)}
+header{padding:14px 2px 8px}h1{margin:0;font-size:20px;letter-spacing:.3px}h1 span{color:#ff4d6d}
+.maj{color:var(--d);font-size:12.5px;margin-top:2px}.maj b{color:var(--t);font-weight:600}
+details{background:var(--c);border-radius:14px;margin:10px 0;overflow:hidden}
+summary{list-style:none;padding:14px 14px;font-weight:650;font-size:16px;display:flex;align-items:center;gap:8px;cursor:pointer}
+summary::-webkit-details-marker{display:none}summary::after{content:"›";margin-left:auto;color:var(--d);font-size:22px;transform:rotate(90deg);transition:.2s}
+details[open] summary::after{transform:rotate(-90deg)}summary .n{background:var(--c2);color:var(--d);border-radius:20px;padding:1px 9px;font-size:12.5px;font-weight:600}
+.in{padding:0 12px 14px}.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.k{background:var(--c2);border-radius:12px;padding:10px 12px}.k .l{color:var(--d);font-size:12px}.k .v{font-size:21px;font-weight:700;margin-top:2px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}.nav button{background:var(--c2);color:var(--t);border:0;border-radius:10px;padding:8px 14px;font-size:15px}
+.nav b{font-size:14px}
+.j{margin:8px 0;border-radius:12px;background:var(--c2);padding:9px 11px}.j.auj{outline:1.5px solid var(--bl)}
+.j .h{display:flex;justify-content:space-between;font-weight:650;margin-bottom:4px}.j .h em{font-style:normal;color:var(--bl);font-size:12.5px}
+.j .vide{color:var(--d);font-size:13px}
+.it{display:flex;gap:8px;padding:6px 0;border-top:1px solid #2d3240;font-size:14px}.it:first-of-type{border-top:0}
+.it .hr{font-weight:700;min-width:46px}.it .s{width:4px;border-radius:3px;flex:none}.it .x{color:var(--d);font-size:12.5px}
+.v1{padding:10px 0;border-top:1px solid #2d3240}.v1:first-child{border-top:0}.v1 .t{font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.v1 .t small{color:var(--d);font-weight:400;white-space:nowrap}.v1 .m{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;margin-top:5px;font-size:13px;color:var(--d)}.v1 .m b{color:var(--t);font-weight:600}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cmp .k .v{font-size:18px}
+.vide2{color:var(--d);padding:8px 2px}
+</style></head><body>
+<header><h1>🍽️ MANGE <span>OU</span> PASSE</h1><div class="maj" id="maj">Chargement…</div></header>
+<div id="app"></div>
+<script>
+
+const e=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const f=(n,d=0)=>n==null?"—":Number(n).toLocaleString("fr-FR",{maximumFractionDigits:d});
+const eur=n=>n==null?"—":f(n,2)+" €";
+const COUL={"en fabrication":"var(--gr)","à vérifier":"var(--or)","à programmer":"var(--or)","en cours":"var(--or)","programmée":"var(--ok)","publiée":"var(--bl)","erreur":"var(--rg)"};
+const JOURS=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],MOIS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+let D=null,SEM=0;const ouvert=new Set(["cal"]);
+function lundi(off){const d=new Date();d.setHours(12,0,0,0);const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w+off*7);return d}
+function quand(s){if(!s)return "pas encore";const d=new Date(s);return isNaN(d)?e(s):`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")} à ${String(d.getHours()).padStart(2,"0")}h${String(d.getMinutes()).padStart(2,"0")}`}
+function sec(id,titre,nb,html){return `<details id="s_${id}" ${ouvert.has(id)?"open":""} ontoggle="this.open?ouvert.add('${id}'):ouvert.delete('${id}')"><summary>${titre}${nb!=null?` <span class="n">${nb}</span>`:""}</summary><div class="in">${html}</div></details>`}
+function calendrier(){
+  const l=lundi(SEM),auj=iso(new Date());let h=`<div class="nav"><button onclick="SEM--;rendre()">‹</button><b>${l.getDate()} ${MOIS[l.getMonth()]} – ${new Date(l.getTime()+6*864e5).getDate()} ${MOIS[new Date(l.getTime()+6*864e5).getMonth()]}</b><button onclick="SEM++;rendre()">›</button></div>`;
+  for(let i=0;i<7;i++){const d=new Date(l);d.setDate(l.getDate()+i);const k=iso(d);
+    const its=D.calendrier.filter(p=>p.jour===k).sort((a,b)=>a.heure.localeCompare(b.heure));
+    h+=`<div class="j ${k===auj?"auj":""}"><div class="h"><span>${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}</span>${k===auj?"<em>Aujourd'hui</em>":""}</div>`;
+    h+=its.length?its.map(p=>`<div class="it"><span class="s" style="background:${COUL[p.statut]||"var(--gr)"}"></span><span class="hr">${e(p.heure)}</span><span>${p.statut==="programmée"?`Vidéo « ${e(p.nom)} » programmée`:`${e(p.nom)} <span class="x">· ${e(p.statut)}</span>`}${p.innovante?" 🧪":""}</span></div>`).join(""):`<div class="vide">Rien de prévu</div>`;
+    h+=`</div>`}
+  return h}
+function stats(){const s=D.stats;return `<div class="g">
+ <div class="k"><div class="l">Vues moyennes à 48 h</div><div class="v">${f(s.vues48_moyenne)}</div></div>
+ <div class="k"><div class="l">Vidéos suivies</div><div class="v">${s.videos_suivies}</div></div>
+ <div class="k"><div class="l">Gains TikTok suivis</div><div class="v">${eur(s.gains_tiktok)}</div></div>
+ <div class="k"><div class="l">Gains estimés</div><div class="v">${eur(s.gains_estimes)}</div></div></div>`}
+function publiees(){return D.publiees.length?D.publiees.map(v=>`<div class="v1"><div class="t"><span>${e(v.emoji)} ${e(v.edition)}${v.innovante?" 🧪":""}</span><small>${e(v.publie.slice(5,10).split("-").reverse().join("/"))}</small></div>
+ <div class="m"><span>Vues <b>${f(v.vues)}</b></span><span>Vues qualif. est. <b>${f(v.vues_qualifiees>0?v.vues_qualifiees:v.vues_qualifiees_est)}</b></span>
+ <span>Gains estimés <b>${eur(v.gains_est)}</b></span><span>Gains TikTok <b>${eur(v.gains_tiktok)}</b></span></div></div>`).join(""):`<div class="vide2">Aucune vidéo publiée suivie.</div>`}
+function groupes(){const c=D.groupes.classique,i=D.groupes.innovante;const bloc=(t,g)=>`<div class="k"><div class="l">${t}</div><div class="v">${f(g.vues48_mediane)}</div><div class="l">vues à 48 h (médiane)</div><div class="l" style="margin-top:6px">${g.videos} vidéo(s) · RPM 7 j ${g.rpm7_moyen==null?"—":f(g.rpm7_moyen,2)}</div></div>`;
+ return `<div class="cmp">${bloc("🎬 Classique",c)}${bloc("🧪 Innovante",i)}</div>`}
+function renta(){const r=D.renta;return `<div class="g">
+ <div class="k"><div class="l">Gains réels (${r.jours} j)</div><div class="v">${eur(r.gains_reels)}</div></div>
+ <div class="k"><div class="l">Gains estimés</div><div class="v">${eur(r.gains_estimes)}</div></div>
+ <div class="k"><div class="l">Coût (abonnement)</div><div class="v">${eur(r.cout)}</div></div>
+ <div class="k"><div class="l">Bénéfice estimé</div><div class="v" style="color:${(r.benefice_estime||0)>=0?"var(--ok)":"var(--rg)"}">${eur(r.benefice_estime)}</div></div></div>
+ <div style="margin-top:8px;color:var(--d);font-size:13px">${r.videos_faites} vidéos faites · ${r.videos_suivies} suivies${r.meilleure?`<br>🏆 ${e(r.meilleure.edition)} (${eur(r.meilleure.gains)})`:""}</div>`}
+function rendre(){if(!D)return;
+ document.getElementById("maj").innerHTML=`Rapport mis à jour le <b>${quand(D.maj_releve)}</b><br>Site mis à jour le <b>${quand(D.maj)}</b>`;
+ document.getElementById("app").innerHTML=sec("cal","📅 Calendrier",D.calendrier.filter(p=>p.statut!=="publiée").length,calendrier())+sec("stats","📊 Statistiques",null,stats())+sec("pub","✅ Vidéos publiées",D.publiees.length,publiees())+sec("grp","⚖️ Classique vs innovante",null,groupes())+sec("ren","💰 Rentabilité",null,renta())}
+
+let CODE="";try{CODE=localStorage.getItem("mop_code")||""}catch(x){}
+if(location.hash.length>1){CODE=decodeURIComponent(location.hash.slice(1));try{localStorage.setItem("mop_code",CODE)}catch(x){}history.replaceState(null,"",location.pathname)}
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function dechiffrer(o,code){const k0=await crypto.subtle.importKey("raw",new TextEncoder().encode(code),"PBKDF2",false,["deriveKey"]);
+ const k=await crypto.subtle.deriveKey({name:"PBKDF2",salt:b64(o.s),iterations:o.it,hash:"SHA-256"},k0,{name:"AES-GCM",length:256},false,["decrypt"]);
+ const p=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(o.i)},k,b64(o.c));return JSON.parse(new TextDecoder().decode(p))}
+function demanderCode(msg){document.getElementById("app").innerHTML=`<div class="in" style="padding:20px 4px"><div class="vide2">${msg||"Entre ton code d'accès :"}</div><input id="cd" type="password" autocomplete="current-password" style="width:100%;padding:12px;border-radius:10px;border:0;background:var(--c2);color:var(--t);font-size:16px;margin:10px 0"><button onclick="CODE=document.getElementById('cd').value;try{localStorage.setItem('mop_code',CODE)}catch(x){};charger()" style="width:100%;padding:12px;border:0;border-radius:10px;background:var(--bl);color:#fff;font-size:16px">Ouvrir</button></div>`}
+async function charger(){
+ if(!CODE){document.getElementById("maj").textContent="";demanderCode();return}
+ try{const r=await fetch("data.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;const o=await r.json();
+  try{D=await dechiffrer(o,CODE)}catch(x){try{localStorage.removeItem("mop_code")}catch(y){};CODE="";demanderCode("Code incorrect. Réessaie :");return}
+  rendre()}catch(x){if(!D)document.getElementById("maj").textContent="Pas de connexion ou site pas encore publié.";else document.getElementById("maj").insertAdjacentHTML("beforeend"," · hors ligne")}}
+charger();setInterval(()=>{if(CODE)charger()},120000);document.addEventListener("visibilitychange",()=>{if(!document.hidden&&CODE)charger()});
+</script></body></html>
